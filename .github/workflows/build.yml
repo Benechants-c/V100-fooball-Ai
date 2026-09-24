@@ -12,13 +12,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.5
-      - name: Clean fake APK
+      - name: Clean old build
         run: rm -rf app/build
-      - name: Repair missing wrapper
+      - name: Repair wrapper
         run: gradle wrapper --gradle-version 8.5
-      - name: Build REAL APK
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Build APK
         run: ./gradlew assembleDebug --no-daemon
-      - name: Check APK size
+      - name: Show size
         run: ls -lh app/build/outputs/apk/debug/
       - uses: actions/upload-artifact@v4
         with:
