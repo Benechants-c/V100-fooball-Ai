@@ -12,7 +12,7 @@ jobs:
       - name: Clean fake APK
         run: rm -rf app/build.gradle
       - name: Make gradlew executable
-        run: chmod +x./gradlew
+        run: chmod +x ./gradlew
       - name: Build REAL APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
       - name: Check APK size
