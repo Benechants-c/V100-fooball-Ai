@@ -9,9 +9,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - run: chmod +x./gradlew
-      - run:./gradlew assembleDebug
-      - uses: actions/upload-artifact@v4
+      - name: Make executable
+        run: chmod +x./gradlew
+      - name: Build
+        run:./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: V100-Football-AI-APK
           path: app/build/outputs/apk/debug/app-debug.apk
