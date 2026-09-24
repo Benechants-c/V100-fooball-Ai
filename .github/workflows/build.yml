@@ -9,18 +9,20 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.5
+      - name: Install Android SDK 34
+        run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list_installed
       - name: Clean old build
         run: rm -rf app/build
       - name: Build REAL APK
         run: gradle assembleDebug --no-daemon
       - name: Show size
-        run: ls -lh app/build/outputs/apk/debug/ || echo "no apk" && du -h app/build/outputs/apk/debug/*.apk || true
+        run: ls -lh app/build/outputs/apk/debug/ && du -h app/build/outputs/apk/debug/*.apk
       - uses: actions/upload-artifact@v4
         with:
           name: V100-APK
           path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: warn
