@@ -25,8 +25,8 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class MatchItem(val league: String, val home: String, val away: String, val score: String, val time: String, val live: Boolean, val country: String)
-data class LeagueItem(val name: String, val country: String, val flag: String, val type: String)
+data class MatchItem(val league: String, val home: String, val away: String, val score: String, val time: String, val live: Boolean)
+data class LeagueItem(val name: String, val country: String, val type: String)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,28 +50,26 @@ fun App() {
         isLoading = false
     }
 
-    val leagues = remember {
-        listOf(
-            LeagueItem("Champions League", "Europe", "🇪🇺", "Cup"),
-            LeagueItem("Premier League", "England", "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "League"),
-            LeagueItem("LaLiga", "Spain", "🇪🇸", "League"),
-            LeagueItem("Serie A", "Italy", "🇮🇹", "League"),
-            LeagueItem("Bundesliga", "Germany", "🇩🇪", "League"),
-            LeagueItem("Ligue 1", "France", "🇫🇷", "League"),
-            LeagueItem("Zimbabwe PSL", "Zimbabwe", "🇿🇼", "League"),
-            LeagueItem("PSL Premiership", "South Africa", "🇿🇦", "League"),
-            LeagueItem("Egypt Premier", "Egypt", "🇪🇬", "League"),
-            LeagueItem("AFCON", "Africa", "🌍", "Cup"),
-            LeagueItem("World Cup", "World", "🌍", "Cup"),
-            LeagueItem("MLS", "USA", "🇺🇸", "League"),
-            LeagueItem("Saudi Pro League", "Saudi Arabia", "🇸🇦", "League"),
-        )
-    }
+    val leagues = listOf(
+        LeagueItem("Champions League", "Europe", "Cup"),
+        LeagueItem("Premier League", "England", "League"),
+        LeagueItem("LaLiga", "Spain", "League"),
+        LeagueItem("Serie A", "Italy", "League"),
+        LeagueItem("Bundesliga", "Germany", "League"),
+        LeagueItem("Ligue 1", "France", "League"),
+        LeagueItem("Zimbabwe PSL", "Zimbabwe", "League"),
+        LeagueItem("PSL Premiership", "South Africa", "League"),
+        LeagueItem("Egypt Premier", "Egypt", "League"),
+        LeagueItem("AFCON", "Africa", "Cup"),
+        LeagueItem("World Cup", "World", "Cup"),
+        LeagueItem("MLS", "USA", "League"),
+        LeagueItem("Saudi Pro League", "Saudi Arabia", "League"),
+    )
 
     val fallback = listOf(
-        MatchItem("Premier League", "Arsenal", "Chelsea", "2-1", "FT", false, "🏴󠁧󠁢󠁥󠁮󠁧󠁿"),
-        MatchItem("Zimbabwe PSL", "Dynamos", "Highlanders", "1-1", "62'", true, "🇿🇼"),
-        MatchItem("LaLiga", "Barcelona", "Real Madrid", "3-2", "FT", false, "🇪🇸"),
+        MatchItem("Premier League", "Arsenal", "Chelsea", "2-1", "FT", false),
+        MatchItem("Zimbabwe PSL", "Dynamos", "Highlanders", "1-1", "62'", true),
+        MatchItem("LaLiga", "Barcelona", "Real Madrid", "3-2", "FT", false),
     )
     val display = if(liveMatches.isNotEmpty()) liveMatches else fallback
 
@@ -83,7 +81,7 @@ fun App() {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("fotmob LIVE", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                         if(isLoading) CircularProgressIndicator(Modifier.size(16.dp), 2.dp, Color.White)
-                        else Text("● LIVE", color = Color(0xFF00FF7F), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        else Text("LIVE", color = Color(0xFF00FF7F), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             },
@@ -100,7 +98,7 @@ fun App() {
                     0 -> LazyColumn(Modifier.fillMaxSize().padding(8.dp)) {
                         items(display.groupBy { it.league }.toList()) { (lg, ms) ->
                             Column(Modifier.padding(vertical=6.dp).background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp)).fillMaxWidth().padding(12.dp)) {
-                                Text("${ms[0].country} $lg", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(lg, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                 ms.forEach { m ->
                                     Row(Modifier.fillMaxWidth().padding(vertical=6.dp), verticalAlignment = Alignment.CenterVertically) {
                                         Text(m.home, color = Color.White, modifier = Modifier.weight(1f), fontSize = 13.sp)
@@ -122,7 +120,7 @@ fun App() {
                             Spacer(Modifier.height(12.dp))
                             OutlinedTextField(value = away, onValueChange = {away=it}, label = {Text("Away Team", color=Color.Gray)}, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor=Color.White, unfocusedTextColor=Color.White))
                             Spacer(Modifier.height(16.dp))
-                            Button(onClick = { res = "Prediction: $home 2-1 $away\nConfidence: 87% (LIVE DATA)" }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor=Color.White, contentColor=Color.Black)) { Text("GET PREDICTION", fontWeight=FontWeight.Bold) }
+                            Button(onClick = { res = "Prediction: $home 2-1 $away\nConfidence: 87% LIVE" }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor=Color.White, contentColor=Color.Black)) { Text("GET PREDICTION", fontWeight=FontWeight.Bold) }
                             res?.let { Box(Modifier.padding(top=16.dp).background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp)).fillMaxWidth().padding(16.dp)){ Text(it, color=Color.White) } }
                         }
                     }
@@ -130,7 +128,6 @@ fun App() {
                         LazyColumn(Modifier.fillMaxSize()) {
                             items(leagues) { lg ->
                                 Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(lg.flag, modifier = Modifier.width(32.dp), fontSize = 18.sp)
                                     Column(Modifier.weight(1f)) { Text(lg.name, color=Color.White, fontSize=14.sp); Text(lg.country, color=Color.Gray, fontSize=11.sp) }
                                 }
                                 Divider(color=Color(0xFF2A2A2A), thickness=0.5.dp)
@@ -159,9 +156,9 @@ fun fetchFotMob(): List<MatchItem> {
                 val away = m.optJSONObject("away")?.optString("name","Away") ?: "Away"
                 val hs = m.optJSONObject("home")?.optInt("score",0) ?: 0
                 val ascore = m.optJSONObject("away")?.optInt("score",0) ?: 0
-                val live = m.optJSONObject("status")?.optBoolean("started",false) ?: false && !(m.optJSONObject("status")?.optBoolean("finished",false) ?: true)
                 val t = m.optJSONObject("status")?.optString("liveTime","FT") ?: "FT"
-                out.add(MatchItem(lname, home, away, "$hs-$ascore", t, live, "⚽"))
+                val live = t.contains("'") || t.contains("+")
+                out.add(MatchItem(lname, home, away, "$hs-$ascore", t, live))
                 if(out.size>60) break
             }
         }
