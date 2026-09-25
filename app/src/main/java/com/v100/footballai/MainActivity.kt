@@ -1,86 +1,204 @@
-package com.v100.footballai
+package com.predictor.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+data class MatchItem(val league: String, val home: String, val away: String, val score: String, val time: String, val live: Boolean, val country: String)
+data class LeagueItem(val name: String, val country: String, val flag: String, val type: String)
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { FotMobCleanApp() }
+        setContent { App() }
     }
 }
 
-data class Match(val league: String, val home: String, val away: String, val time: String, val isLive: Boolean, val score: String)
-
 @Composable
-fun FotMobCleanApp() {
-    var selectedTab by remember { mutableStateOf(0) }
-    var selectedDate by remember { mutableStateOf(1) }
-    val dates = listOf("YESTERDAY", "TODAY", "TOMORROW", "THU", "FRI", "SAT", "SUN")
+fun App() {
+    var tab by remember { mutableIntStateOf(2) } // Open Leagues to see
+
+    val allLeagues = remember {
+        listOf(
+            // --- UEFA COMPETITIONS ---
+            LeagueItem("Champions League", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("Europa League", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("Conference League", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("UEFA Super Cup", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("Euro Championship", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("Euro Qualifiers", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("Nations League", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("U21 Euro", "Europe", "🇪🇺", "Cup"),
+            LeagueItem("Youth League", "Europe", "🇪🇺", "Cup"),
+
+            // --- BIG 5 ---
+            LeagueItem("Premier League", "England", "🏴󐁧󐁢󐁥󐁮󐁧󐁿", "League"),
+            LeagueItem("Championship", "England", "🏴󐁧󐁢󐁥󐁮󐁧󐁿", "League"),
+            LeagueItem("FA Cup", "England", "🏴󐁧󐁢󐁥󐁮󐁧󐁿", "Cup"),
+            LeagueItem("EFL Cup", "England", "🏴󐁧󐁢󐁥󐁮󐁧󐁿", "Cup"),
+
+            LeagueItem("LaLiga", "Spain", "🇪🇸", "League"),
+            LeagueItem("LaLiga2", "Spain", "🇪🇸", "League"),
+            LeagueItem("Copa del Rey", "Spain", "🇪🇸", "Cup"),
+
+            LeagueItem("Serie A", "Italy", "🇮🇹", "League"),
+            LeagueItem("Serie B", "Italy", "🇮🇹", "League"),
+            LeagueItem("Coppa Italia", "Italy", "🇮🇹", "Cup"),
+
+            LeagueItem("Bundesliga", "Germany", "🇩🇪", "League"),
+            LeagueItem("2. Bundesliga", "Germany", "🇩🇪", "League"),
+            LeagueItem("3. Liga", "Germany", "🇩🇪", "League"),
+            LeagueItem("DFB-Pokal", "Germany", "🇩🇪", "Cup"),
+
+            LeagueItem("Ligue 1", "France", "🇫🇷", "League"),
+            LeagueItem("Ligue 2", "France", "🇫🇷", "League"),
+            LeagueItem("Coupe de France", "France", "🇫🇷", "Cup"),
+
+            // --- REST OF EUROPE ---
+            LeagueItem("Eredivisie", "Netherlands", "🇳🇱", "League"),
+            LeagueItem("Eerste Divisie", "Netherlands", "🇳🇱", "League"),
+            LeagueItem("KNVB Cup", "Netherlands", "🇳🇱", "Cup"),
+
+            LeagueItem("Primeira Liga", "Portugal", "🇵🇹", "League"),
+            LeagueItem("Liga Portugal 2", "Portugal", "🇵🇹", "League"),
+            LeagueItem("Taça de Portugal", "Portugal", "🇵🇹", "Cup"),
+
+            LeagueItem("Belgian Pro League", "Belgium", "🇧🇪", "League"),
+            LeagueItem("Belgian Cup", "Belgium", "🇧🇪", "Cup"),
+            LeagueItem("Jupiler Pro League", "Belgium", "🇧🇪", "League"),
+
+            LeagueItem("Super Lig", "Turkey", "🇹🇷", "League"),
+            LeagueItem("1. Lig", "Turkey", "🇹🇷", "League"),
+            LeagueItem("Turkish Cup", "Turkey", "🇹🇷", "Cup"),
+
+            LeagueItem("Premiership", "Scotland", "🏴󐁧󐁢󐁳󐁣󐁴󐁿", "League"),
+            LeagueItem("Scottish Championship", "Scotland", "🏴󐁧󐁢󐁳󐁣󐁴󐁿", "League"),
+            LeagueItem("Scottish Cup", "Scotland", "🏴󐁧󐁢󐁳󐁣󐁴󐁿", "Cup"),
+
+            LeagueItem("Austrian Bundesliga", "Austria", "🇦🇹", "League"),
+            LeagueItem("Austrian Cup", "Austria", "🇦🇹", "Cup"),
+            LeagueItem("Swiss Super League", "Switzerland", "🇨🇭", "League"),
+            LeagueItem("Super League", "Greece", "🇬🇷", "League"),
+            LeagueItem("Greek Cup", "Greece", "🇬🇷", "Cup"),
+
+            // Scandinavia
+            LeagueItem("Superliga", "Denmark", "🇩🇰", "League"),
+            LeagueItem("Allsvenskan", "Sweden", "🇸🇪", "League"),
+            LeagueItem("Eliteserien", "Norway", "🇳🇴", "League"),
+            LeagueItem("Veikkausliiga", "Finland", "🇫🇮", "League"),
+            LeagueItem("1. Deild", "Faroe Islands", "🇫🇴", "League"),
+            LeagueItem("Besta Deild", "Iceland", "🇮🇸", "League"),
+
+            // Eastern Europe
+            LeagueItem("Ekstraklasa", "Poland", "🇵🇱", "League"),
+            LeagueItem("Czech Liga", "Czech Republic", "🇨🇿", "League"),
+            LeagueItem("Slovak Super Liga", "Slovakia", "🇸🇰", "League"),
+            LeagueItem("Fortuna Liga", "Slovakia", "🇸🇰", "League"),
+            LeagueItem("Prva Liga", "Slovenia", "🇸🇮", "League"),
+            LeagueItem("HNL", "Croatia", "🇭🇷", "League"),
+            LeagueItem("Super Liga", "Serbia", "🇷🇸", "League"),
+            LeagueItem("NB I", "Hungary", "🇭🇺", "League"),
+            LeagueItem("Liga I", "Romania", "🇷🇴", "League"),
+            LeagueItem("Parva Liga", "Bulgaria", "🇧🇬", "League"),
+            LeagueItem("Premier League", "Ukraine", "🇺🇦", "League"),
+            LeagueItem("Premier League", "Russia", "🇷🇺", "League"),
+            LeagueItem("Belarus Premier", "Belarus", "🇧🇾", "League"),
+
+            // Small / Western
+            LeagueItem("Premier Division", "Ireland", "🇮🇪", "League"),
+            LeagueItem("FAI Cup", "Ireland", "🇮🇪", "Cup"),
+            LeagueItem("Premiership", "Northern Ireland", "🇬🇧", "League"),
+            LeagueItem("Cymru Premier", "Wales", "🏴󐁧󐁢󐁷󐁬󐁳󐁿", "League"),
+            LeagueItem("First Division", "Cyprus", "🇨🇾", "League"),
+            LeagueItem("First League", "Malta", "🇲🇹", "League"),
+            LeagueItem("Premier League", "Armenia", "🇦🇲", "League"),
+            LeagueItem("Erovnuli Liga", "Georgia", "🇬🇪", "League"),
+            LeagueItem("Superliga", "Albania", "🇦🇱", "League"),
+            LeagueItem("Super League", "Kosovo", "🇽🇰", "League"),
+            LeagueItem("Premier League", "Bosnia", "🇧🇦", "League"),
+            LeagueItem("First League", "North Macedonia", "🇲🇰", "League"),
+            LeagueItem("Super League", "Moldova", "🇲🇩", "League"),
+            LeagueItem("A Lyga", "Lithuania", "🇱🇹", "League"),
+            LeagueItem("Virsliga", "Latvia", "🇱🇻", "League"),
+            LeagueItem("Meistriliiga", "Estonia", "🇪🇪", "League"),
+            LeagueItem("Premier League", "Luxembourg", "🇱🇺", "League"),
+
+            // --- AFRICA (Keep your base) ---
+            LeagueItem("Zimbabwe PSL", "Zimbabwe", "🇿🇼", "League"),
+            LeagueItem("Chibuku Super Cup", "Zimbabwe", "🇿🇼", "Cup"),
+            LeagueItem("PSL Premiership", "South Africa", "🇿🇦", "League"),
+            LeagueItem("Nedbank Cup", "South Africa", "🇿🇦", "Cup"),
+            LeagueItem("Botswana Premier", "Botswana", "🇧🇼", "League"),
+            LeagueItem("Zambia Super League", "Zambia", "🇿🇲", "League"),
+            LeagueItem("Egypt Premier", "Egypt", "🇪🇬", "League"),
+            LeagueItem("Morocco Botola", "Morocco", "🇲🇦", "League"),
+            LeagueItem("Nigeria NPFL", "Nigeria", "🇳🇬", "League"),
+            LeagueItem("AFCON", "Africa", "🌍", "Cup"),
+            LeagueItem("CAF Champions League", "Africa", "🌍", "Cup"),
+
+            // --- WORLD ---
+            LeagueItem("World Cup", "World", "🌍", "Cup"),
+            LeagueItem("MLS", "USA", "🇺🇸", "League"),
+            LeagueItem("Brasileirão", "Brazil", "🇧🇷", "League"),
+            LeagueItem("Saudi Pro League", "Saudi Arabia", "🇸🇦", "League"),
+        )
+    }
+
+    val matches = listOf(
+        MatchItem("Premier League", "Arsenal", "Chelsea", "2-1", "FT", false, "🏴󐁧󐁢󐁥󐁮󐁧󐁿"),
+        MatchItem("Zimbabwe PSL", "Dynamos", "Highlanders", "1-1", "62'", true, "🇿🇼"),
+        MatchItem("LaLiga", "Barcelona", "Real Madrid", "3-2", "FT", false, "🇪🇸"),
+        MatchItem("Bundesliga", "Bayern", "Dortmund", "4-2", "FT", false, "🇩🇪"),
+        MatchItem("Champions League", "Man City", "Real Madrid", "2-2", "LIVE", true, "🇪🇺"),
+    )
 
     MaterialTheme(colorScheme = darkColorScheme()) {
         Scaffold(
             containerColor = Color(0xFF121212),
             topBar = {
-                Column(Modifier.background(Color(0xFF1A1A1A)).padding(top = 8.dp)) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("fotmob", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
-                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
-                            Icon(Icons.Default.Settings, contentDescription = null, tint = Color.White)
-                        }
-                    }
-                    Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        dates.forEachIndexed { i, d ->
-                            val isSel = i == selectedDate
-                            Box(Modifier.clip(RoundedCornerShape(20.dp)).background(if (isSel) Color.White else Color(0xFF2A2A2A)).padding(horizontal = 18.dp, vertical = 8.dp)) {
-                                Text(d, color = if (isSel) Color.Black else Color.Gray, fontSize = 12.sp, fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal)
+                Column(Modifier.background(Color(0xFF121212)).padding(12.dp)) {
+                    Text("fotmob", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(10.dp))
+                    Row {
+                        listOf("YESTERDAY","TODAY","TOMORROW","THU","FRI").forEach {
+                            Box(Modifier.padding(end=8.dp).background(if(it=="TODAY") Color.White else Color(0xFF2A2A2A), RoundedCornerShape(16.dp)).padding(horizontal=12.dp, vertical=6.dp)){
+                                Text(it, color = if(it=="TODAY") Color.Black else Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
-                    Divider(color = Color(0xFF2A2A2A), thickness = 0.5.dp)
                 }
             },
             bottomBar = {
-                NavigationBar(containerColor = Color(0xFF1A1A1A)) {
-                    NavigationBarItem(selected = selectedTab == 0, onClick = { selectedTab = 0 }, icon = { Icon(Icons.Default.Home, null) }, label = { Text("Matches", fontSize = 10.sp) }, colors = NavigationBarItemDefaults.colors(selectedIconColor = Color.White, indicatorColor = Color(0xFF2A2A2A)))
-                    NavigationBarItem(selected = selectedTab == 1, onClick = { selectedTab = 1 }, icon = { Icon(Icons.Default.Star, null) }, label = { Text("Predict", fontSize = 10.sp) }, colors = NavigationBarItemDefaults.colors(selectedIconColor = Color.White, indicatorColor = Color(0xFF2A2A2A)))
-                    NavigationBarItem(selected = selectedTab == 2, onClick = { selectedTab = 2 }, icon = { Icon(Icons.Default.List, null) }, label = { Text("Leagues", fontSize = 10.sp) }, colors = NavigationBarItemDefaults.colors(selectedIconColor = Color.White, indicatorColor = Color(0xFF2A2A2A)))
-                    NavigationBarItem(selected = selectedTab == 3, onClick = { selectedTab = 3 }, icon = { Icon(Icons.Default.Person, null) }, label = { Text("Following", fontSize = 10.sp) }, colors = NavigationBarItemDefaults.colors(selectedIconColor = Color.White, indicatorColor = Color(0xFF2A2A2A)))
+                NavigationBar(containerColor = Color(0xFF1E1E1E)) {
+                    NavigationBarItem(selected = tab==0, onClick = {tab=0}, icon = {Icon(Icons.Default.Home, null)}, label = {Text("Matches")})
+                    NavigationBarItem(selected = tab==1, onClick = {tab=1}, icon = {Icon(Icons.Default.Star, null)}, label = {Text("Predict")})
+                    NavigationBarItem(selected = tab==2, onClick = {tab=2}, icon = {Icon(Icons.Default.List, null)}, label = {Text("Leagues")})
+                    NavigationBarItem(selected = tab==3, onClick = {tab=3}, icon = {Icon(Icons.Default.Favorite, null)}, label = {Text("Following")})
                 }
             }
         ) { pad ->
             Box(Modifier.padding(pad).background(Color(0xFF121212)).fillMaxSize()) {
-                when (selectedTab) {
-                    0 -> MatchesScreen()
-                    1 -> PredictScreenFotMob()
-                    2 -> LeaguesScreenFotMob()
-                    3 -> ProfileScreenFotMob()
+                when(tab) {
+                    0 -> MatchesTab(matches)
+                    1 -> PredictTab()
+                    2 -> LeaguesTab(allLeagues)
+                    3 -> FollowingTab()
                 }
             }
         }
@@ -88,128 +206,81 @@ fun FotMobCleanApp() {
 }
 
 @Composable
-fun MatchesScreen() {
-    val matchesByLeague = mapOf(
-        "Premier League" to listOf(
-            Match("PL", "Manchester City", "Arsenal", "FT", false, "2-1"),
-            Match("PL", "Liverpool", "Chelsea", "78'", true, "1-1"),
-            Match("PL", "Man United", "Tottenham", "15:00", false, "-")
-        ),
-        "Zimbabwe PSL" to listOf(
-            Match("ZIM", "Dynamos FC", "Highlanders FC", "15:00", false, "-"),
-            Match("ZIM", "CAPS United", "FC Platinum", "LIVE 62'", true, "0-1")
-        ),
-        "LaLiga" to listOf(
-            Match("LIGA", "Real Madrid", "Barcelona", "21:00", false, "-")
-        ),
-        "CAF Champions League" to listOf(
-            Match("CAF", "Simba SC", "Al Ahly", "18:00", false, "-"),
-            Match("CAF", "Sundowns", "Young Africans", "18:00", false, "-")
-        )
-    )
-
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 8.dp)) {
-        matchesByLeague.forEach { (league, matches) ->
-            item {
-                Row(Modifier.fillMaxWidth().background(Color(0xFF1E1E1E)).padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.size(20.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) { Text(league.take(1), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Black) }
-                    Text(league, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            items(matches) { m ->
-                Card(colors = CardDefaults.cardColors(Color(0xFF1A1A1A)), shape = RoundedCornerShape(0.dp), modifier = Modifier.fillMaxWidth()) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(m.time, color = if (m.isLive) Color(0xFFFF3B30) else Color.Gray, fontSize = 11.sp, fontWeight = if (m.isLive) FontWeight.Bold else FontWeight.Normal, modifier = Modifier.width(60.dp))
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Box(Modifier.size(20.dp).clip(CircleShape).background(Color(0xFF2A2A2A)), contentAlignment = Alignment.Center) { Text(m.home.take(2).uppercase(), fontSize = 8.sp, color = Color.White) }
-                                Text(m.home, color = Color.White, fontSize = 13.sp)
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Box(Modifier.size(20.dp).clip(CircleShape).background(Color(0xFF2A2A2A)), contentAlignment = Alignment.Center) { Text(m.away.take(2).uppercase(), fontSize = 8.sp, color = Color.White) }
-                                Text(m.away, color = Color.White, fontSize = 13.sp)
-                            }
+fun MatchesTab(matches: List<MatchItem>) {
+    LazyColumn(Modifier.fillMaxSize().padding(8.dp)) {
+        items(matches.groupBy { it.league }.toList()) { (league, ms) ->
+            Column(Modifier.padding(vertical=6.dp).background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp)).fillMaxWidth().padding(12.dp)) {
+                Text("${ms[0].country} $league", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Spacer(Modifier.height(8.dp))
+                ms.forEach { m ->
+                    Row(Modifier.fillMaxWidth().padding(vertical=6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(m.home, color = Color.White, modifier = Modifier.weight(1f), fontSize = 13.sp)
+                        Box(Modifier.background(if(m.live) Color(0xFF3A1A1A) else Color(0xFF2A2A2A), RoundedCornerShape(6.dp)).padding(horizontal=8.dp, vertical=4.dp)){
+                            Text(if(m.live) m.time else m.score, color = if(m.live) Color.Red else Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
-                        if (m.score != "-") {
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(m.score, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            }
-                        } else {
-                            if (m.isLive) Box(Modifier.size(8.dp).clip(CircleShape).background(Color.Red))
-                        }
+                        Text(m.away, color = Color.White, modifier = Modifier.weight(1f), fontSize = 13.sp)
                     }
-                    Divider(color = Color(0xFF2A2A2A), thickness = 0.5.dp, modifier = Modifier.padding(start = 16.dp))
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PredictScreenFotMob() {
-    val teams = listOf("Dynamos FC", "Highlanders FC", "Man City", "Arsenal", "Real Madrid", "Barcelona", "Simba SC", "Mamelodi Sundowns", "CAPS United", "Liverpool", "Man United", "Chelsea").sorted()
+fun PredictTab() {
     var home by remember { mutableStateOf("") }
     var away by remember { mutableStateOf("") }
-    var result by remember { mutableStateOf("") }
-    var homeExp by remember { mutableStateOf(false) }
-    var awayExp by remember { mutableStateOf(false) }
-
-    LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { Text("AI Prediction Lab", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
-        item {
-            Card(colors = CardDefaults.cardColors(Color(0xFF1E1E1E)), shape = RoundedCornerShape(12.dp)) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ExposedDropdownMenuBox(expanded = homeExp, onExpandedChange = { homeExp = !homeExp }) {
-                        OutlinedTextField(value = home, onValueChange = { home = it; homeExp = true }, label = { Text("Home Team - WHITE TEXT FIXED", color = Color.Gray) }, modifier = Modifier.fillMaxWidth().menuAnchor(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedBorderColor = Color.White, unfocusedBorderColor = Color.Gray, cursorColor = Color.White))
-                        ExposedDropdownMenu(expanded = homeExp, onDismissRequest = { homeExp = false }) { teams.filter { it.contains(home, true) }.forEach { t -> DropdownMenuItem(text = { Text(t, color = Color.White) }, onClick = { home = t; homeExp = false }) } }
-                    }
-                    ExposedDropdownMenuBox(expanded = awayExp, onExpandedChange = { awayExp = !awayExp }) {
-                        OutlinedTextField(value = away, onValueChange = { away = it; awayExp = true }, label = { Text("Away Team - WHITE TEXT FIXED", color = Color.Gray) }, modifier = Modifier.fillMaxWidth().menuAnchor(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedBorderColor = Color.White, unfocusedBorderColor = Color.Gray, cursorColor = Color.White))
-                        ExposedDropdownMenu(expanded = awayExp, onDismissRequest = { awayExp = false }) { teams.filter { it.contains(away, true) }.forEach { t -> DropdownMenuItem(text = { Text(t, color = Color.White) }, onClick = { away = t; awayExp = false }) } }
-                    }
-                    Button(onClick = { result = "MATCH: $home vs $away\n\nFORM: $home WWWDL (Last 5)\nFORM: $away LWDWL\nH2H: 2-1-2\n\nPREDICTION: 2-1\nConfidence: 87%\nTip: 1X + Over 1.5\nBTTS: YES 64%" }, modifier = Modifier.fillMaxWidth().height(50.dp), colors = ButtonDefaults.buttonColors(Color.White)) { Text("GET PREDICTION", color = Color.Black, fontWeight = FontWeight.Bold) }
-                }
-            }
-        }
-        if (result.isNotBlank()) {
-            item {
-                Card(colors = CardDefaults.cardColors(Color(0xFF1E1E1E)), shape = RoundedCornerShape(12.dp)) {
-                    Text(result, Modifier.padding(16.dp), color = Color.White, lineHeight = 20.sp, fontSize = 14.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun LeaguesScreenFotMob() {
-    val leagues = listOf("Premier League - England" to "20 Teams", "LaLiga - Spain" to "20 Teams", "Bundesliga - Germany" to "18 Teams", "Serie A - Italy" to "20 Teams", "Zim PSL - Zimbabwe" to "18 Teams", "SA Prem - South Africa" to "16 Teams", "Tanzania PL" to "16 Teams", "CAF Champions League" to "16 Teams")
-    LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-        item { Text("All Leagues", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp)) }
-        items(leagues) { (name, info) ->
-            Row(Modifier.fillMaxWidth().background(Color(0xFF1E1E1E)).padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(name, color = Color.White, fontSize = 14.sp, modifier = Modifier.weight(1f))
-                Text(info, color = Color.Gray, fontSize = 12.sp)
-            }
-            Divider(color = Color(0xFF121212), thickness = 1.dp)
-        }
-    }
-}
-
-@Composable
-fun ProfileScreenFotMob() {
-    Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Box(Modifier.size(80.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) { Text("V100", color = Color.Black, fontWeight = FontWeight.Black) }
+    var result by remember { mutableStateOf<String?>(null) }
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        OutlinedTextField(value = home, onValueChange = {home=it}, label = {Text("Home Team", color = Color.Gray)}, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
         Spacer(Modifier.height(12.dp))
-        Text("V100 Football AI", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        Text("FotMob Design - Clean Version", color = Color.Gray, fontSize = 13.sp)
-        Spacer(Modifier.height(20.dp))
-        Card(colors = CardDefaults.cardColors(Color(0xFF1E1E1E)), shape = RoundedCornerShape(12.dp)) {
-            Column(Modifier.padding(16.dp)) {
-                Text("V105 CLEAN BUILD", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("No hidden unicode\nWhite text fixed\n4 Pages\nFotMob style UI", color = Color.Gray, fontSize = 13.sp, lineHeight = 18.sp)
+        OutlinedTextField(value = away, onValueChange = {away=it}, label = {Text("Away Team", color = Color.Gray)}, modifier = Modifier.fillMaxWidth(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White))
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = { result = if(home.isNotBlank() && away.isNotBlank()) "Prediction: $home 2-1 $away\nConfidence: 87%\nBTTS: Yes" else null }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)) {
+            Text("GET PREDICTION", fontWeight = FontWeight.Bold)
+        }
+        result?.let {
+            Spacer(Modifier.height(16.dp))
+            Box(Modifier.background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp)).fillMaxWidth().padding(16.dp)){
+                Text(it, color = Color.White, fontSize = 16.sp)
             }
         }
+    }
+}
+
+@Composable
+fun LeaguesTab(leagues: List<LeagueItem>) {
+    var query by remember { mutableStateOf("") }
+    val filtered = leagues.filter { it.name.contains(query, true) || it.country.contains(query, true) }
+    val grouped = filtered.groupBy { it.country }
+    Column(Modifier.fillMaxSize()) {
+        OutlinedTextField(value = query, onValueChange = {query=it}, placeholder = {Text("Search leagues", color = Color.Gray)}, leadingIcon = {Icon(Icons.Default.Search, null, tint = Color.Gray)}, modifier = Modifier.fillMaxWidth().padding(12.dp), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedContainerColor = Color(0xFF1E1E1E), unfocusedContainerColor = Color(0xFF1E1E1E)))
+        LazyColumn(Modifier.fillMaxSize()) {
+            grouped.forEach { (country, list) ->
+                item {
+                    Row(Modifier.fillMaxWidth().background(Color(0xFF181818)).padding(horizontal=16.dp, vertical=8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(list[0].flag, fontSize = 16.sp, modifier = Modifier.width(28.dp))
+                        Text(country.uppercase(), color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                items(list) { lg ->
+                    Row(Modifier.fillMaxWidth().clickable{}.padding(horizontal=16.dp, vertical=14.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(lg.name, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            Text(lg.type, color = Color.Gray, fontSize = 11.sp)
+                        }
+                        Icon(Icons.Default.KeyboardArrowRight, null, tint = Color.Gray, modifier = Modifier.size(18.dp))
+                    }
+                    Divider(color = Color(0xFF2A2A2A), thickness = 0.5.dp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FollowingTab() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Follow teams to see them here", color = Color.Gray)
     }
 }
