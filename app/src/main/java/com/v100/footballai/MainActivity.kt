@@ -12,7 +12,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,16 +31,16 @@ import androidx.compose.ui.unit.sp
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { FotMobCloneApp() }
+        setContent { FotMobCleanApp() }
     }
 }
 
 data class Match(val league: String, val home: String, val away: String, val time: String, val isLive: Boolean, val score: String)
 
 @Composable
-fun FotMobCloneApp() {
+fun FotMobCleanApp() {
     var selectedTab by remember { mutableStateOf(0) }
-    var selectedDate by remember { mutableStateOf(2) }
+    var selectedDate by remember { mutableStateOf(1) }
     val dates = listOf("YESTERDAY", "TODAY", "TOMORROW", "THU", "FRI", "SAT", "SUN")
 
     MaterialTheme(colorScheme = darkColorScheme()) {
@@ -44,13 +49,12 @@ fun FotMobCloneApp() {
             topBar = {
                 Column(Modifier.background(Color(0xFF1A1A1A)).padding(top = 8.dp)) {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("fotmob", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                        Text("fotmob", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
                             Icon(Icons.Default.Settings, contentDescription = null, tint = Color.White)
                         }
                     }
-                    // Date selector like FotMob
                     Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         dates.forEachIndexed { i, d ->
                             val isSel = i == selectedDate
@@ -74,9 +78,9 @@ fun FotMobCloneApp() {
             Box(Modifier.padding(pad).background(Color(0xFF121212)).fillMaxSize()) {
                 when (selectedTab) {
                     0 -> MatchesScreen()
-                    1 -> FotMobPredictScreen()
-                    2 -> FotMobLeaguesScreen()
-                    3 -> FollowingScreen()
+                    1 -> PredictScreenFotMob()
+                    2 -> LeaguesScreenFotMob()
+                    3 -> ProfileScreenFotMob()
                 }
             }
         }
@@ -96,12 +100,11 @@ fun MatchesScreen() {
             Match("ZIM", "CAPS United", "FC Platinum", "LIVE 62'", true, "0-1")
         ),
         "LaLiga" to listOf(
-            Match("LIGA", "Real Madrid", "Barcelona", "21:00", false, "-"),
-            Match("LIGA", "Atletico Madrid", "Sevilla", "FT", false, "2-0")
+            Match("LIGA", "Real Madrid", "Barcelona", "21:00", false, "-")
         ),
         "CAF Champions League" to listOf(
             Match("CAF", "Simba SC", "Al Ahly", "18:00", false, "-"),
-            Match("CAF", "Mamelodi Sundowns", "Young Africans", "18:00", false, "-")
+            Match("CAF", "Sundowns", "Young Africans", "18:00", false, "-")
         )
     )
 
@@ -111,8 +114,6 @@ fun MatchesScreen() {
                 Row(Modifier.fillMaxWidth().background(Color(0xFF1E1E1E)).padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.size(20.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) { Text(league.take(1), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Black) }
                     Text(league, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.weight(1f))
-                    Icon(Icons.Default.KeyboardArrowRight, null, tint = Color.Gray, modifier = Modifier.size(16.dp))
                 }
             }
             items(matches) { m ->
@@ -129,10 +130,9 @@ fun MatchesScreen() {
                                 Text(m.away, color = Color.White, fontSize = 13.sp)
                             }
                         }
-                        if (m.score!= "-") {
+                        if (m.score != "-") {
                             Column(horizontalAlignment = Alignment.End) {
-                                Text(m.score.split("-")[0], color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                                Text(m.score.split("-")[1], color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text(m.score, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                         } else {
                             if (m.isLive) Box(Modifier.size(8.dp).clip(CircleShape).background(Color.Red))
@@ -147,8 +147,8 @@ fun MatchesScreen() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FotMobPredictScreen() {
-    val teams = listOf("Dynamos FC", "Highlanders FC", "Man City", "Arsenal", "Real Madrid", "Barcelona", "Simba SC", "Mamelodi Sundowns", "CAPS United", "Liverpool").sorted()
+fun PredictScreenFotMob() {
+    val teams = listOf("Dynamos FC", "Highlanders FC", "Man City", "Arsenal", "Real Madrid", "Barcelona", "Simba SC", "Mamelodi Sundowns", "CAPS United", "Liverpool", "Man United", "Chelsea").sorted()
     var home by remember { mutableStateOf("") }
     var away by remember { mutableStateOf("") }
     var result by remember { mutableStateOf("") }
@@ -156,19 +156,19 @@ fun FotMobPredictScreen() {
     var awayExp by remember { mutableStateOf(false) }
 
     LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { Text("V100 AI Prediction", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
+        item { Text("AI Prediction Lab", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
         item {
             Card(colors = CardDefaults.cardColors(Color(0xFF1E1E1E)), shape = RoundedCornerShape(12.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ExposedDropdownMenuBox(expanded = homeExp, onExpandedChange = { homeExp =!homeExp }) {
-                        OutlinedTextField(value = home, onValueChange = { home = it; homeExp = true }, label = { Text("Home", color = Color.Gray) }, modifier = Modifier.fillMaxWidth().menuAnchor(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedBorderColor = Color.White, cursorColor = Color.White))
+                    ExposedDropdownMenuBox(expanded = homeExp, onExpandedChange = { homeExp = !homeExp }) {
+                        OutlinedTextField(value = home, onValueChange = { home = it; homeExp = true }, label = { Text("Home Team - WHITE TEXT FIXED", color = Color.Gray) }, modifier = Modifier.fillMaxWidth().menuAnchor(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedBorderColor = Color.White, unfocusedBorderColor = Color.Gray, cursorColor = Color.White))
                         ExposedDropdownMenu(expanded = homeExp, onDismissRequest = { homeExp = false }) { teams.filter { it.contains(home, true) }.forEach { t -> DropdownMenuItem(text = { Text(t, color = Color.White) }, onClick = { home = t; homeExp = false }) } }
                     }
-                    ExposedDropdownMenuBox(expanded = awayExp, onExpandedChange = { awayExp =!awayExp }) {
-                        OutlinedTextField(value = away, onValueChange = { away = it; awayExp = true }, label = { Text("Away", color = Color.Gray) }, modifier = Modifier.fillMaxWidth().menuAnchor(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedBorderColor = Color.White, cursorColor = Color.White))
+                    ExposedDropdownMenuBox(expanded = awayExp, onExpandedChange = { awayExp = !awayExp }) {
+                        OutlinedTextField(value = away, onValueChange = { away = it; awayExp = true }, label = { Text("Away Team - WHITE TEXT FIXED", color = Color.Gray) }, modifier = Modifier.fillMaxWidth().menuAnchor(), colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White, focusedBorderColor = Color.White, unfocusedBorderColor = Color.Gray, cursorColor = Color.White))
                         ExposedDropdownMenu(expanded = awayExp, onDismissRequest = { awayExp = false }) { teams.filter { it.contains(away, true) }.forEach { t -> DropdownMenuItem(text = { Text(t, color = Color.White) }, onClick = { away = t; awayExp = false }) } }
                     }
-                    Button(onClick = { result = "AI ANALYSIS: $home vs $away\n\nForm: $home WWWDL\nForm: $away LWDWL\nH2H: Last 5 = 2-1-2\n\nPrediction: 2-1\nConfidence: 87%\nTip: 1X + Over 1.5\nBTTS: YES 64%" }, modifier = Modifier.fillMaxWidth().height(50.dp), colors = ButtonDefaults.buttonColors(Color.White)) { Text("GET PREDICTION", color = Color.Black, fontWeight = FontWeight.Bold) }
+                    Button(onClick = { result = "MATCH: $home vs $away\n\nFORM: $home WWWDL (Last 5)\nFORM: $away LWDWL\nH2H: 2-1-2\n\nPREDICTION: 2-1\nConfidence: 87%\nTip: 1X + Over 1.5\nBTTS: YES 64%" }, modifier = Modifier.fillMaxWidth().height(50.dp), colors = ButtonDefaults.buttonColors(Color.White)) { Text("GET PREDICTION", color = Color.Black, fontWeight = FontWeight.Bold) }
                 }
             }
         }
@@ -183,16 +183,14 @@ fun FotMobPredictScreen() {
 }
 
 @Composable
-fun FotMobLeaguesScreen() {
-    val leagues = listOf("Premier League" to "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "LaLiga" to "🇪🇸", "Bundesliga" to "🇩🇪", "Serie A" to "🇮🇹", "Zim PSL" to "🇿🇼", "SA Prem" to "🇿🇦", "Tanzania PL" to "🇹🇿", "CAF CL" to "🌍")
+fun LeaguesScreenFotMob() {
+    val leagues = listOf("Premier League - England" to "20 Teams", "LaLiga - Spain" to "20 Teams", "Bundesliga - Germany" to "18 Teams", "Serie A - Italy" to "20 Teams", "Zim PSL - Zimbabwe" to "18 Teams", "SA Prem - South Africa" to "16 Teams", "Tanzania PL" to "16 Teams", "CAF Champions League" to "16 Teams")
     LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
         item { Text("All Leagues", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp)) }
-        items(leagues) { (name, flag) ->
+        items(leagues) { (name, info) ->
             Row(Modifier.fillMaxWidth().background(Color(0xFF1E1E1E)).padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(flag, fontSize = 20.sp)
-                Text(name, color = Color.White, fontSize = 14.sp)
-                Spacer(Modifier.weight(1f))
-                Text(">", color = Color.Gray)
+                Text(name, color = Color.White, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                Text(info, color = Color.Gray, fontSize = 12.sp)
             }
             Divider(color = Color(0xFF121212), thickness = 1.dp)
         }
@@ -200,17 +198,17 @@ fun FotMobLeaguesScreen() {
 }
 
 @Composable
-fun FollowingScreen() {
+fun ProfileScreenFotMob() {
     Column(Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(Icons.Default.Person, null, tint = Color.Gray, modifier = Modifier.size(64.dp))
+        Box(Modifier.size(80.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) { Text("V100", color = Color.Black, fontWeight = FontWeight.Black) }
         Spacer(Modifier.height(12.dp))
         Text("V100 Football AI", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-        Text("Built by you • 100+ Teams • FotMob Design", color = Color.Gray, fontSize = 13.sp)
+        Text("FotMob Design - Clean Version", color = Color.Gray, fontSize = 13.sp)
         Spacer(Modifier.height(20.dp))
         Card(colors = CardDefaults.cardColors(Color(0xFF1E1E1E)), shape = RoundedCornerShape(12.dp)) {
             Column(Modifier.padding(16.dp)) {
-                Text("🔥 Version 104 - FotMob Clone", color = Color.White, fontWeight = FontWeight.Bold)
-                Text("✅ White text fixed\n✅ Multi-page\n✅ Live pulse indicator\n✅ League grouping", color = Color.Gray, fontSize = 13.sp, lineHeight = 18.sp)
+                Text("V105 CLEAN BUILD", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("No hidden unicode\nWhite text fixed\n4 Pages\nFotMob style UI", color = Color.Gray, fontSize = 13.sp, lineHeight = 18.sp)
             }
         }
     }
