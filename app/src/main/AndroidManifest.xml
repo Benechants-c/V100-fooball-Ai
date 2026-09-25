@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        ... (keep everything from #71 here) ...<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="Football LIVE"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:usesCleartextTraffic="true">
+        android:label="V100 Football AI"
+        android:theme="@android:style/Theme.NoTitleBar">
         <activity
             android:name=".MainActivity"
             android:exported="true">
