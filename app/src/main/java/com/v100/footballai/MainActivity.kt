@@ -22,76 +22,76 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class M(val league:String, val home:String, val away:String, val score:String, val min:String, val live:Boolean)
+data class Match(val league:String, val home:String, val away:String, val score:String, val time:String, val live:Boolean)
 
 class MainActivity : ComponentActivity(){
-    override fun onCreate(b:Bundle?){
-        super.onCreate(b)
-        setContent{ App() }
+    override fun onCreate(savedInstanceState:Bundle?){
+        super.onCreate(savedInstanceState)
+        setContent{ V100App() }
     }
 }
 
 @Composable
-fun App(){
-    var list by remember{ mutableStateOf<List<M>>(emptyList()) }
-    var status by remember{ mutableStateOf("Loading...") }
-    var day by remember{ mutableIntStateOf(1) }
+fun V100App(){
+    var matches by remember{ mutableStateOf<List<Match>>(emptyList()) }
+    var status by remember{ mutableStateOf("Connecting to live servers...") }
+    var tab by remember{ mutableStateOf(1) }
 
-    LaunchedEffect(day){
-        status = "Fetching online..."
+    LaunchedEffect(tab){
+        status = "Fetching live games..."
         try{
-            val d = withContext(Dispatchers.IO){ fetch(day) }
-            if(d.isNotEmpty()){
-                list = d
-                status = "LIVE ${d.size} matches ONLINE ${SimpleDateFormat("HH:mm",Locale.US).format(Date())}"
+            val result = withContext(Dispatchers.IO){ fetchLive(tab) }
+            if(result.isNotEmpty()){
+                matches = result
+                status = "LIVE ONLINE • ${result.size} games • ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())}"
             } else {
-                status = "No games today - demo"
+                status = "No live games now - showing demo"
             }
-        }catch(e:Exception){
-            status = "Offline demo"
+        } catch(e:Exception){
+            status = "Offline mode"
         }
     }
 
     val demo = listOf(
-        M("England - Premier League","Arsenal","Man City","2 - 1","68'",true),
-        M("Zimbabwe - PSL","Dynamos","Highlanders","1 - 0","62'",true),
-        M("Spain - La Liga","Barcelona","Real Madrid","1 - 1","45+2'",true),
-        M("Italy - Serie A","Inter","AC Milan","0 - 0","FT",false),
-        M("Germany - Bundesliga","Bayern","Dortmund","3 - 2","FT",false)
+        Match("England - Premier League","Arsenal","Man City","2 - 1","68'",true),
+        Match("Zimbabwe - PSL","Dynamos","Highlanders","1 - 0","62'",true),
+        Match("Spain - La Liga","Barcelona","Real Madrid","1 - 1","HT",true),
+        Match("Germany - Bundesliga","Bayern Munich","Dortmund","3 - 2","FT",false),
+        Match("Italy - Serie A","Inter","AC Milan","0 - 0","FT",false)
     )
-    val show = if(list.isNotEmpty()) list else demo
-    val isOnline = list.isNotEmpty()
+    val display = if(matches.isNotEmpty()) matches else demo
+    val online = matches.isNotEmpty()
 
     MaterialTheme{
-        Column(Modifier.fillMaxSize().background(Color(0xFF101010))){
-            Column(Modifier.fillMaxWidth().background(Color.Black).padding(14.dp)){
-                Text("FOTMOB LIVE", color=Color.White, fontSize=20.sp, fontWeight=FontWeight.Black)
-                Spacer(Modifier.height(4.dp))
-                Text(status, color=if(isOnline) Color(0xFF00E676) else Color.Gray, fontSize=11.sp, fontWeight=FontWeight.Bold)
-                Spacer(Modifier.height(10.dp))
+        Column(Modifier.fillMaxSize().background(Color(0xFF0F0F0F))){
+            Column(Modifier.fillMaxWidth().background(Color.Black).padding(16.dp)){
+                Text("V100 FOOTBALL AI", color=Color.White, fontSize=22.sp, fontWeight=FontWeight.Black, letterSpacing=1.sp)
+                Spacer(Modifier.height(6.dp))
+                Text(status, color=if(online) Color(0xFF00E676) else Color(0xFF9E9E9E), fontSize=12.sp, fontWeight=FontWeight.Bold)
+                Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
                     listOf("YESTERDAY","TODAY","TOMORROW").forEachIndexed{ i,t ->
-                        Button(onClick={day=i}, colors=ButtonDefaults.buttonColors(containerColor=if(i==day) Color.White else Color(0xFF333333))){
-                            Text(t, color=if(i==day) Color.Black else Color.White, fontSize=10.sp, fontWeight=FontWeight.Bold)
+                        Button(onClick={tab=i}, colors=ButtonDefaults.buttonColors(containerColor=if(i==tab) Color.White else Color(0xFF2A2A2A))){
+                            Text(t, color=if(i==tab) Color.Black else Color.White, fontSize=10.sp, fontWeight=FontWeight.Bold)
                         }
                     }
                 }
             }
-            LazyColumn(Modifier.fillMaxSize().background(Color(0xFF101010)).padding(8.dp), verticalArrangement=Arrangement.spacedBy(6.dp)){
-                val groups = show.groupBy{ it.league }
-                groups.forEach{ (lg, ms) ->
+            LazyColumn(Modifier.fillMaxSize().padding(8.dp), verticalArrangement=Arrangement.spacedBy(6.dp)){
+                val groups = display.groupBy{ it.league }
+                groups.forEach{ (lg, list) ->
                     item{
-                        Text(lg, color=Color.White, fontSize=12.sp, fontWeight=FontWeight.Bold, modifier=Modifier.fillMaxWidth().background(Color(0xFF222222)).padding(10.dp))
+                        Text(lg, color=Color.White, fontSize=12.sp, fontWeight=FontWeight.Bold, modifier=Modifier.fillMaxWidth().background(Color(0xFF212121)).padding(12.dp))
                     }
-                    items(ms){ m ->
-                        Row(Modifier.fillMaxWidth().background(Color(0xFF1A1A1A)).padding(12.dp)){
-                            Text(m.home, color=Color.White, fontSize=13.sp, modifier=Modifier.weight(1f))
-                            Column(horizontalAlignment=androidx.compose.ui.Alignment.CenterHorizontally, modifier=Modifier.width(80.dp)){
-                                if(m.live) Text("LIVE", color=Color.Red, fontSize=10.sp, fontWeight=FontWeight.Bold)
-                                Text(m.score, color=Color.White, fontSize=14.sp, fontWeight=FontWeight.Bold)
-                                Text(m.min, color=Color.Gray, fontSize=10.sp)
+                    items(list){ m ->
+                        Row(Modifier.fillMaxWidth().background(Color(0xFF1A1A1A)).padding(14.dp)){
+                            Text(m.home, color=Color.White, fontSize=14.sp, modifier=Modifier.weight(1f), fontWeight=FontWeight.Medium)
+                            Column(Modifier.width(90.dp), horizontalAlignment=androidx.compose.ui.Alignment.CenterHorizontally){
+                                if(m.live) Text("LIVE", color=Color(0xFFFF5252), fontSize=10.sp, fontWeight=FontWeight.Black)
+                                Text(m.score, color=Color.White, fontSize=15.sp, fontWeight=FontWeight.Bold)
+                                Text(m.time, color=Color.Gray, fontSize=11.sp)
                             }
-                            Text(m.away, color=Color.White, fontSize=13.sp, modifier=Modifier.weight(1f), textAlign=androidx.compose.ui.text.style.TextAlign.End)
+                            Text(m.away, color=Color.White, fontSize=14.sp, modifier=Modifier.weight(1f), fontWeight=FontWeight.Medium)
                         }
                     }
                 }
@@ -100,34 +100,27 @@ fun App(){
     }
 }
 
-fun fetch(dayOff:Int): List<M> {
-    val out = mutableListOf<M>()
+fun fetchLive(day:Int): List<Match>{
+    val out = mutableListOf<Match>()
     try{
         val cal = Calendar.getInstance()
-        cal.add(Calendar.DAY_OF_YEAR, dayOff-1)
-        val d = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.time)
-        val url = URL("https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=$d&s=Soccer")
+        cal.add(Calendar.DAY_OF_YEAR, day-1)
+        val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(cal.time)
+        val url = URL("https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=$date&s=Soccer")
         val conn = url.openConnection() as HttpURLConnection
         conn.setRequestProperty("User-Agent","Mozilla/5.0")
         conn.connectTimeout=12000
         conn.readTimeout=12000
-        val txt = conn.inputStream.bufferedReader().readText()
+        val text = conn.inputStream.bufferedReader().readText()
         conn.disconnect()
-        val arr = JSONObject(txt).optJSONArray("events")
-        if(arr!=null){
-            for(i in 0 until arr.length()){
-                val e = arr.getJSONObject(i)
-                val lg = e.optString("strLeague","League")
-                val h = e.optString("strHomeTeam","Home")
-                val a = e.optString("strAwayTeam","Away")
-                val hs = e.optString("intHomeScore","0")
-                val ascore = e.optString("intAwayScore","0")
-                if(hs=="null" || hs=="") continue
-                val st = e.optString("strStatus","FT")
-                val live = st.contains("H1") || st.contains("H2") || st.contains("HT")
-                out.add(M(lg, h, a, "$hs - $ascore", st, live))
-                if(out.size>60) break
-            }
+        val arr = JSONObject(text).optJSONArray("events") ?: return out
+        for(i in 0 until arr.length()){
+            val e = arr.getJSONObject(i)
+            val hs = e.optString("intHomeScore")
+            if(hs.isEmpty() || hs=="null") continue
+            val ascore = e.optString("intAwayScore","0")
+            out.add(Match(e.optString("strLeague","League"), e.optString("strHomeTeam","Home"), e.optString("strAwayTeam","Away"), "$hs - $ascore", e.optString("strStatus","FT"), true))
+            if(out.size>=60) break
         }
     }catch(_:Exception){}
     return out
