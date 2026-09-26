@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
-        android:icon="@android:mipmap/sym_def_app_icon"
-        android:label="V100 Football AI"
-        android:roundIcon="@android:mipmap/sym_def_app_icon"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.V100FootballAI"
-        tools:targetApi="31">
+        android:label="V100 Football AI">
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:label="V100 Football AI"
-            android:theme="@style/Theme.V100FootballAI">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
